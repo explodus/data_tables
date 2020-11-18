@@ -68,13 +68,11 @@ class _NativePagedListViewState extends State<PagedListView> {
   }
 
   _scrollListener() {
-    if (_controller.offset >= _controller.position.maxScrollExtent &&
-        !_controller.position.outOfRange) {
+    if (_controller.offset >= _controller.position.maxScrollExtent && !_controller.position.outOfRange) {
       // Bottom of List
       widget?.loadNext();
     }
-    if (_controller.offset <= _controller.position.minScrollExtent &&
-        !_controller.position.outOfRange) {
+    if (_controller.offset <= _controller.position.minScrollExtent && !_controller.position.outOfRange) {
       // Top of List
     }
   }
@@ -106,8 +104,7 @@ class _NativePagedListViewState extends State<PagedListView> {
                                       value: widget.rows[index].selected,
                                       onChanged: (bool value) {
                                         setState(() {
-                                          widget.rows[index]
-                                              .onSelectChanged(value);
+                                          widget.rows[index].onSelectChanged(value);
                                         });
                                       },
                                     ),
@@ -138,7 +135,22 @@ class _NativePagedListViewState extends State<PagedListView> {
     );
   }
 
-  List<Widget> get actions => [
+  List<Widget> get actions {
+    if (null != widget.actions) {
+      return []
+        ..addAll(widget.actions)
+        ..add(
+          Container(
+            child: widget?.onRefresh == null
+                ? null
+                : IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: widget.onRefresh,
+                  ),
+          ),
+        );
+    } else {
+      return [
         IconButton(
           icon: Icon(Icons.select_all),
           onPressed: () {
@@ -158,15 +170,12 @@ class _NativePagedListViewState extends State<PagedListView> {
             }
 
             _sortController = Scaffold.of(context).showBottomSheet((context) {
-              final List<DataColumn> _cols =
-                  widget.columns.where((c) => c?.onSort != null)?.toList();
+              final List<DataColumn> _cols = widget.columns.where((c) => c?.onSort != null)?.toList();
               final bool _sortAsc = widget.sortAscending;
               final int selectedIndex = widget.sortColumnIndex;
               return Container(
                 decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black38
-                        : Colors.grey[200],
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.black38 : Colors.grey[200],
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20.0),
                       topRight: Radius.circular(20.0),
@@ -180,9 +189,7 @@ class _NativePagedListViewState extends State<PagedListView> {
                           dense: true,
                           selected: selectedIndex == i,
                           title: _cols[i].label,
-                          subtitle: Text(widget.sortAscending
-                              ? 'Ascending'
-                              : 'Descending'),
+                          subtitle: Text(widget.sortAscending ? 'Ascending' : 'Descending'),
                           leading: Radio<int>(
                             groupValue: selectedIndex,
                             onChanged: (value) {
@@ -193,9 +200,7 @@ class _NativePagedListViewState extends State<PagedListView> {
                             value: i,
                           ),
                           trailing: IconButton(
-                            icon: Icon(_sortAsc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward),
+                            icon: Icon(_sortAsc ? Icons.arrow_upward : Icons.arrow_downward),
                             onPressed: () {
                               _sortController.setState(() {
                                 _cols[i].onSort(i, !_sortAsc);
@@ -221,7 +226,7 @@ class _NativePagedListViewState extends State<PagedListView> {
                           child: FlatButton(
                             child: Text(
                               "Close",
-                              style: Theme.of(context).textTheme.headline,
+                              style: Theme.of(context).textTheme.headline5,
                             ),
                             onPressed: () {
                               _sortController.close();
@@ -249,7 +254,10 @@ class _NativePagedListViewState extends State<PagedListView> {
                   onPressed: widget.onRefresh,
                 ),
         ),
-      ]..addAll(widget?.actions);
+      ];
+    }
+  }
+
   List<Widget> get selectedActions => [
         IconButton(
           icon: Icon(Icons.clear_all),
@@ -263,13 +271,7 @@ class _NativePagedListViewState extends State<PagedListView> {
 
   bool get rowsSelected => _selectedRowCount != 0;
 
-  int get _selectedRowCount =>
-      widget.rows
-          ?.where((d) => d?.selected ?? false)
-          ?.toSet()
-          ?.toList()
-          ?.length ??
-      0;
+  int get _selectedRowCount => widget.rows?.where((d) => d?.selected ?? false)?.toSet()?.toList()?.length ?? 0;
 
   List<Widget> _buildMobileChildren(int index) {
     List<Widget> _children = [];
